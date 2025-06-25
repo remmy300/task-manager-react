@@ -2,23 +2,12 @@ import { TaskContext } from "@/context/TaskContext";
 import React from "react";
 import { useContext } from "react";
 import TaskCharts from "../Layout/TaskCharts";
+import { GetTaskStats } from "@/utils/GetTasks";
 
 const Dashboard = () => {
   const { tasks } = useContext(TaskContext);
+  const taskStats = GetTaskStats(tasks);
   console.log(tasks);
-
-  const taskStats = {
-    total: tasks.length,
-    completed: tasks.filter((task) => task.status === "completed").length,
-    inProgress: tasks.filter((task) => task.status === "inProgress").length,
-    pending: tasks.filter((task) => task.status === "pending").length,
-    dueDate: tasks.filter(
-      (task) =>
-        task.overdue &&
-        new Date(task.overdue) < new Date() &&
-        task.status !== "completed"
-    ),
-  };
 
   if (tasks.length === 0) {
     return (
@@ -33,18 +22,36 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-2">
-      <div className="w-full h-24 shadow rounded bg-white/95">
-        <p>{new Date().toString()}</p>
-        <div className="flex text-lg gap-3 items-center">
-          <p>{taskStats.total}All</p>
-          <p>{taskStats.inProgress}In Progress</p>
-          <p>{taskStats.completed} Completed</p>
-          <p>{taskStats.pending} Pending</p>
+    <div className="p-2 w-full ">
+      <div className="h-24 shadow rounded bg-white/95 ">
+        <p>
+          {new Date().toLocaleDateString(undefined, {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
+        <div className="flex text-lg gap-3 items-center justify-around">
+          <p className="bg-blue-600 px-4 text-sm flex items-center gap-2">
+            <span>All</span>
+            <span>{taskStats.total}</span>
+          </p>
+          <p className="bg-amber-300 px-3 text-sm flex items-center gap-2">
+            <span>In Progress</span>
+            <span>{taskStats.inProgress}</span>
+          </p>
+          <p className="bg-blue-400 px-3 text-sm flex items-center gap-2">
+            <span>Completed</span>
+            <span>{taskStats.completed}</span>
+          </p>
+          <p className="bg-pink-500 text-sm px-3 flex items-center gap-2">
+            <span>Pending</span>
+            <span>{taskStats.pending}</span>
+          </p>
         </div>
-        <div className="flex gap-3">
-          <TaskCharts />
-        </div>
+      </div>
+      <div className="flex gap-4 ">
+        <TaskCharts />
       </div>
     </div>
   );

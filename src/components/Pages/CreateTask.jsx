@@ -31,6 +31,11 @@ const taskSchema = z.object({
     required_error: "Priority is required",
   }),
   "due date": z.date({ required_error: "Due date is required" }),
+  status: z
+    .enum(["pending", "inProgress", "completed"], {
+      required_error: "Status is required",
+    })
+    .default("pending"),
 });
 
 export default function CreateTask() {
@@ -45,6 +50,7 @@ export default function CreateTask() {
       description: "",
       priority: undefined,
       "due date": undefined,
+      status: "pending",
     },
   });
 
@@ -103,6 +109,28 @@ export default function CreateTask() {
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="inProgress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormControl>

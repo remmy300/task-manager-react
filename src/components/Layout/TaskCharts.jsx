@@ -1,4 +1,4 @@
-import { Pie, Bar } from "react-chartjs-2";
+import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -24,23 +24,34 @@ ChartJS.register(
 const TaskCharts = () => {
   const { tasks } = useContext(TaskContext);
 
-  // Data calculations
+  // Filter out undefined statuses and priorities
   const statusCounts = tasks.reduce((acc, task) => {
-    acc[task.status] = (acc[task.status] || 0) + 1;
+    if (task.status) {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+    }
     return acc;
   }, {});
 
   const priorityCounts = tasks.reduce((acc, task) => {
-    acc[task.priority] = (acc[task.priority] || 0) + 1;
+    if (task.priority) {
+      acc[task.priority] = (acc[task.priority] || 0) + 1;
+    }
     return acc;
   }, {});
 
   // Status Distribution Chart (Pie)
+  const statusLabels =
+    Object.keys(statusCounts).length > 0
+      ? Object.keys(statusCounts)
+      : ["No Data"];
+  const statusValues =
+    Object.values(statusCounts).length > 0 ? Object.values(statusCounts) : [0];
+
   const statusData = {
-    labels: Object.keys(statusCounts),
+    labels: statusLabels,
     datasets: [
       {
-        data: Object.values(statusCounts),
+        data: statusValues,
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
         borderWidth: 1,
       },
@@ -62,24 +73,23 @@ const TaskCharts = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      {/* Status Pie Chart */}
-      <div className="bg-white p-4 rounded-lg shadow">
+      {/* Status Doughnut Chart */}
+      <div className="bg-white/90 p-4 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Task Status Distribution</h3>
-        <div className="h-64">
-          <Pie
+        <div className="h-[300px] w-[500px] mx-auto">
+          <Doughnut
             data={statusData}
             options={{
               responsive: true,
               maintainAspectRatio: false,
+              cutout: "70%",
             }}
           />
         </div>
       </div>
-
-      {/* Priority Bar Chart */}
-      <div className="bg-white p-4 rounded-lg shadow">
+      <div className="bg-white/90 p-4 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Task Priority Levels</h3>
-        <div className="h-64">
+        <div className="h-[300px] w-[500px] p-3 mx-auto">
           <Bar
             data={priorityData}
             options={{
@@ -91,6 +101,19 @@ const TaskCharts = () => {
                   ticks: {
                     stepSize: 1,
                   },
+                  grid: {
+                    display: false,
+                  },
+                },
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
                 },
               },
             }}
