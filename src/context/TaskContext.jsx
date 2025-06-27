@@ -26,12 +26,12 @@ export const TaskProvider = ({ children }) => {
       totalSubtasks: newTask.totalSubtasks || 0,
       status: newTask.status || "pending",
 
-      "due date": newTask["due date"]?.toISOString?.() || newTask["due date"],
-      "start date":
-        newTask["start date"]?.toISOString?.() || newTask["start date"],
+      dueDate: newTask.dueDate?.toISOString?.(),
+      startDate: newTask.startDate?.toISOString?.(),
     };
 
     setTasks([...tasks, completeTask]);
+    console.log("📦 Task added to localStorage:", completeTask);
   };
 
   const updateTask = (id, updatedTask) => {
@@ -42,12 +42,12 @@ export const TaskProvider = ({ children }) => {
               ...task,
               ...updatedTask,
 
-              "due date":
-                updatedTask["due date"]?.toISOString?.() ||
-                updatedTask["due date"],
-              "start date":
-                updatedTask["start date"]?.toISOString?.() ||
-                updatedTask["start date"],
+              dueDate:
+                updatedTask["dueDate"]?.toISOString?.() ||
+                updatedTask["dueDate"],
+              startDate:
+                updatedTask["startDate"]?.toISOString?.() ||
+                updatedTask["startDate"],
             }
           : task
       )

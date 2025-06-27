@@ -13,10 +13,12 @@ const TaskCard = ({ task }) => {
     description,
     completedSubtasks = task.completedSubtasks ?? 0,
     totalSubtasks = task.totalSubtasks ?? 0,
-    ["task-title"]: title,
-    ["due date"]: dueDate,
-    ["start date"]: startDate,
+    title,
+    ["dueDate"]: dueDate,
+    ["startDate"]: startDate,
   } = task;
+
+  console.log("existing tasks:", task);
 
   const handleEdit = () => {
     navigate(`/edit-tasks`, { state: { task } });
@@ -102,6 +104,8 @@ const TaskCard = ({ task }) => {
 const Tasks = () => {
   const { tasks } = useContext(TaskContext);
   const [filter, setFilter] = useState("all");
+
+  console.log("tasks added:", tasks);
 
   const filteredTasks =
     filter === "all" ? tasks : tasks.filter((task) => task.status === filter);

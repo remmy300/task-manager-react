@@ -25,16 +25,16 @@ import { useContext } from "react";
 import { TaskContext } from "@/context/TaskContext";
 
 const taskSchema = z.object({
-  "task-title": z.string().min(1, "Title is required"),
+  title: z.string().min(1, "Title is required"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
-  "due date": z.preprocess(
+  dueDate: z.preprocess(
     (arg) => (typeof arg === "string" ? new Date(arg) : arg),
     z.date()
   ),
-  "start date": z.preprocess(
+  startDate: z.preprocess(
     (arg) => (typeof arg === "string" ? new Date(arg) : arg),
     z.date()
   ),
@@ -56,19 +56,19 @@ export default function CreateTask({ onSubmit, initialValues }) {
     defaultValues: initialValues
       ? {
           ...initialValues,
-          "start date": initialValues["start date"]
-            ? new Date(initialValues["start date"])
+          startDate: initialValues["startDate"]
+            ? new Date(initialValues["startDate"])
             : undefined,
-          "due date": initialValues["due date"]
-            ? new Date(initialValues["due date"])
+          dueDate: initialValues["dueDate"]
+            ? new Date(initialValues["dueDate"])
             : undefined,
         }
       : {
-          "task-title": "",
+          title: "",
           description: "",
           priority: "medium",
-          "due date": undefined,
-          "start date": undefined,
+          dueDate: undefined,
+          startDate: undefined,
           status: "pending",
           completedSubtasks: 0,
           totalSubtasks: 0,
@@ -78,9 +78,11 @@ export default function CreateTask({ onSubmit, initialValues }) {
   const handleFormSubmit = (data) => {
     const processedData = {
       ...data,
-      "due date": data["due date"]?.toISOString?.(),
-      "start date": data["start date"]?.toISOString?.(),
+      dueDate: data["dueDate"]?.toISOString?.(),
+      startDate: data["startDate"]?.toISOString?.(),
     };
+
+    console.log("the proccesed data:", processedData);
 
     if (onSubmit) {
       onSubmit(processedData);
@@ -100,10 +102,10 @@ export default function CreateTask({ onSubmit, initialValues }) {
         <h1 className="text-xl font-semibold text-center">
           {isEditing ? "Edit Task" : "Create New Task"}
         </h1>
-        {/* Task Title Field */}
+
         <FormField
           control={form.control}
-          name="task-title"
+          name="title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Task Title</FormLabel>
@@ -114,7 +116,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
             </FormItem>
           )}
         />
-        {/* Description Field */}
+
         <FormField
           control={form.control}
           name="description"
@@ -128,7 +130,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
             </FormItem>
           )}
         />
-        {/* Priority + Due Date */}
+
         <div className="flex gap-3 items-center">
           <FormField
             control={form.control}
@@ -185,7 +187,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
 
           <FormField
             control={form.control}
-            name="start date"
+            name="startDate"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Start Date</FormLabel>
@@ -198,7 +200,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
           />
           <FormField
             control={form.control}
-            name="due date"
+            name="dueDate"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Due Date</FormLabel>
@@ -252,7 +254,6 @@ export default function CreateTask({ onSubmit, initialValues }) {
           />
         </div>
 
-        {/* Submit */}
         <Button type="submit" className="w-full">
           {isEditing ? "Save Changes" : "Create Task"}
         </Button>
