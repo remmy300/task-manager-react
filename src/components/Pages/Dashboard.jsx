@@ -7,7 +7,6 @@ import { GetTaskStats } from "@/utils/GetTasks";
 const Dashboard = () => {
   const { tasks } = useContext(TaskContext);
   const taskStats = GetTaskStats(tasks);
-  console.log(tasks);
 
   if (tasks.length === 0) {
     return (

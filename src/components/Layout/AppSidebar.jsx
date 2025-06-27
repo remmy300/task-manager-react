@@ -3,6 +3,7 @@ import {
   BookCheck,
   ClipboardPlus,
   LogOut,
+  Pencil,
 } from "lucide-react";
 
 import {

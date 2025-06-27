@@ -30,40 +30,76 @@ const taskSchema = z.object({
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
-  "due date": z.date({ required_error: "Due date is required" }),
+  "due date": z.preprocess(
+    (arg) => (typeof arg === "string" ? new Date(arg) : arg),
+    z.date()
+  ),
+  "start date": z.preprocess(
+    (arg) => (typeof arg === "string" ? new Date(arg) : arg),
+    z.date()
+  ),
   status: z
     .enum(["pending", "inProgress", "completed"], {
       required_error: "Status is required",
     })
     .default("pending"),
+  completedSubtasks: z.number().default(0),
+  totalSubtasks: z.number().default(0),
 });
 
-export default function CreateTask() {
+export default function CreateTask({ onSubmit, initialValues }) {
   const { addTask } = useContext(TaskContext);
-
-  console.log(addTask);
+  const isEditing = !!initialValues;
 
   const form = useForm({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
-      "task-title": "",
-      description: "",
-      priority: undefined,
-      "due date": undefined,
-      status: "pending",
-    },
+    defaultValues: initialValues
+      ? {
+          ...initialValues,
+          "start date": initialValues["start date"]
+            ? new Date(initialValues["start date"])
+            : undefined,
+          "due date": initialValues["due date"]
+            ? new Date(initialValues["due date"])
+            : undefined,
+        }
+      : {
+          "task-title": "",
+          description: "",
+          priority: "medium",
+          "due date": undefined,
+          "start date": undefined,
+          status: "pending",
+          completedSubtasks: 0,
+          totalSubtasks: 0,
+        },
   });
+
+  const handleFormSubmit = (data) => {
+    const processedData = {
+      ...data,
+      "due date": data["due date"]?.toISOString?.(),
+      "start date": data["start date"]?.toISOString?.(),
+    };
+
+    if (onSubmit) {
+      onSubmit(processedData);
+    } else {
+      addTask({ ...processedData, id: crypto.randomUUID() });
+    }
+
+    form.reset();
+  };
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => {
-          addTask(data);
-          form.reset();
-          console.log(data);
-        })}
+        onSubmit={form.handleSubmit(handleFormSubmit)}
         className="space-y-8 m-4 bg-white-90 rounded shadow w-full max-w-4xl p-4"
       >
+        <h1 className="text-xl font-semibold text-center">
+          {isEditing ? "Edit Task" : "Create New Task"}
+        </h1>
         {/* Task Title Field */}
         <FormField
           control={form.control}
@@ -101,7 +137,11 @@ export default function CreateTask() {
               <FormItem>
                 <FormLabel>Priority</FormLabel>
                 <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
@@ -123,7 +163,11 @@ export default function CreateTask() {
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -141,6 +185,19 @@ export default function CreateTask() {
 
           <FormField
             control={form.control}
+            name="start date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <DatePicker value={field.value} onChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="due date"
             render={({ field }) => (
               <FormItem>
@@ -153,9 +210,51 @@ export default function CreateTask() {
             )}
           />
         </div>
+        <div className="flex gap-4">
+          <FormField
+            control={form.control}
+            name="totalSubtasks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Total Subtasks</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 5"
+                    min={0}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="completedSubtasks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Completed Subtasks</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 2"
+                    min={0}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         {/* Submit */}
         <Button type="submit" className="w-full">
-          Create Task
+          {isEditing ? "Save Changes" : "Create Task"}
         </Button>
       </form>
     </Form>

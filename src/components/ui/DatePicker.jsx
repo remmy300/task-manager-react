@@ -17,7 +17,9 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-48 justify-between">
-          {value ? value.toLocaleDateString() : placeholder}
+          {value instanceof Date && !isNaN(value)
+            ? value.toLocaleDateString()
+            : placeholder}
           <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
