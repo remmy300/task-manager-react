@@ -1,61 +1,86 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useContext } from "react";
+import {
+  addDoc,
+  collection,
+  doc,
+  deleteDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../auth/firebase";
+import { useAuth } from "../auth/AuthContext"; // import your auth context
 
 export const TaskContext = createContext();
 
 export const TaskProvider = ({ children }) => {
-  const [tasks, setTasks] = useState(() => {
-    try {
-      const saved = localStorage.getItem("tasks");
-      return saved ? JSON.parse(saved) : [];
-    } catch (error) {
-      console.error("Error parsing tasks from localStorage:", error);
-      return [];
-    }
-  });
+  const { user } = useAuth(); // get current logged-in user
+  const [tasks, setTasks] = useState([]);
 
+  // 🔄 Real-time fetch tasks for the logged-in user
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    if (!user?.uid) return;
 
-  const addTask = (newTask) => {
-    const completeTask = {
-      ...newTask,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      completedSubtasks: newTask.completedSubtasks || 0,
-      totalSubtasks: newTask.totalSubtasks || 0,
-      status: newTask.status || "pending",
+    const q = query(
+      collection(db, "users", user.uid, "tasks"),
+      orderBy("createdAt", "desc")
+    );
 
-      dueDate: newTask.dueDate?.toISOString?.(),
-      startDate: newTask.startDate?.toISOString?.(),
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedTasks = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(fetchedTasks);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // ➕ Add task to Firestore
+  const addTask = async (task) => {
+    if (!user?.uid) return;
+
+    const newTask = {
+      ...task,
+      createdAt: serverTimestamp(),
+      completedSubtasks: task.completedSubtasks || 0,
+      totalSubtasks: task.totalSubtasks || 0,
+      status: task.status || "pending",
+      dueDate: task.dueDate?.toISOString?.() || null,
+      startDate: task.startDate?.toISOString?.() || null,
     };
 
-    setTasks([...tasks, completeTask]);
-    console.log("📦 Task added to localStorage:", completeTask);
+    await addDoc(collection(db, "users", user.uid, "tasks"), newTask);
   };
 
-  const updateTask = (id, updatedTask) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              ...updatedTask,
+  // 📝 Update task
+  const updateTask = async (id, updatedTask) => {
+    if (!user?.uid) return;
 
-              dueDate:
-                updatedTask["dueDate"]?.toISOString?.() ||
-                updatedTask["dueDate"],
-              startDate:
-                updatedTask["startDate"]?.toISOString?.() ||
-                updatedTask["startDate"],
-            }
-          : task
-      )
-    );
+    const taskRef = doc(db, "users", user.uid, "tasks", id);
+
+    await updateDoc(taskRef, {
+      ...updatedTask,
+      dueDate:
+        updatedTask["dueDate"]?.toISOString?.() ||
+        updatedTask["dueDate"] ||
+        null,
+      startDate:
+        updatedTask["startDate"]?.toISOString?.() ||
+        updatedTask["startDate"] ||
+        null,
+    });
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  // 🗑️ Delete task
+  const deleteTask = async (id) => {
+    if (!user?.uid) return;
+
+    const taskRef = doc(db, "users", user.uid, "tasks", id);
+    await deleteDoc(taskRef);
   };
 
   return (
@@ -64,3 +89,5 @@ export const TaskProvider = ({ children }) => {
     </TaskContext.Provider>
   );
 };
+
+export const useTaskContext = () => useContext(TaskContext);
