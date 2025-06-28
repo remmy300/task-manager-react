@@ -5,6 +5,7 @@ import Tasks from "../components/Pages/Tasks";
 import CreateTask from "../components/Pages/CreateTask";
 import ErrorPage from "@/Error/ErrorPage";
 import EditTaskPage from "@/components/Pages/EditTask";
+import LoginPage from "@/components/Pages/Login";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       { path: "tasks", element: <Tasks /> },
       { path: "create-tasks", element: <CreateTask /> },
       { path: "edit-tasks", element: <EditTaskPage /> },
+      { path: "login", element: <LoginPage /> },
     ],
   },
 ]);

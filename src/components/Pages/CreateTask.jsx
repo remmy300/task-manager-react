@@ -26,6 +26,7 @@ import { TaskContext } from "@/context/TaskContext";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  tags: z.array(z.string()).default([]),
   description: z.string().min(5, "Description must be at least 5 characters"),
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
@@ -72,6 +73,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
           status: "pending",
           completedSubtasks: 0,
           totalSubtasks: 0,
+          tags: [],
         },
   });
 
@@ -246,6 +248,29 @@ export default function CreateTask({ onSubmit, initialValues }) {
                     min={0}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="tags"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter tags comma separated (e.g. work, urgent)"
+                    value={field.value?.join(", ") ?? ""}
+                    onChange={(e) => {
+                      const tags = e.target.value
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter((tag) => tag.length > 0);
+                      field.onChange(tags);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

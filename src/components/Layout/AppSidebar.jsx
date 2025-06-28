@@ -5,6 +5,8 @@ import {
   LogOut,
   Pencil,
 } from "lucide-react";
+import { logout } from "@/auth/Auth";
+import { useNavigate } from "react-router-dom";
 
 import {
   Sidebar,
@@ -19,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
+import { use } from "react";
 
 const items = [
   {
@@ -39,12 +42,21 @@ const items = [
 ];
 
 const AppSidebar = () => {
+  const navigate = useNavigate();
+  const handleLogOut = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      alert("Logged out Succesfully" + err.message);
+    }
+  };
   return (
     <Sidebar
       side="left"
       collapsible="icon"
       variant="floating"
-      className="top-[64px] h-[calc(100vh-64px)]"
+      className="top-[64px] h-[calc(100vh-64px)] bg-white/90"
     >
       <SidebarContent>
         <SidebarGroup>
@@ -70,7 +82,7 @@ const AppSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton>
-              <Button>
+              <Button onClick={handleLogOut}>
                 <LogOut />{" "}
                 <span className="text-lg font-semibold">Log Out</span>
               </Button>

@@ -9,7 +9,6 @@ A modern, responsive task management app built with [React](https://reactjs.org/
 - ✅ Add, edit, and delete tasks
 - 🗂️ Filter and sort tasks (e.g., by status or priority)
 - 📅 Mark tasks as completed
-- 🌙 Dark mode support
 - 💾 Data persistence using Local Storage
 - 🖱️ Drag and drop task reordering
 - 👤 User authentication

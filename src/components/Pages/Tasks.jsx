@@ -1,12 +1,29 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useRef } from "react";
 import { TaskContext } from "@/context/TaskContext";
 import TaskMetrics from "../Layout/TaskMetrics";
 import { Trash2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+
+// Animation Variants
+const containerVariants = {
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
 
 const TaskCard = ({ task }) => {
   const navigate = useNavigate();
   const { deleteTask } = useContext(TaskContext);
+
   const {
     status,
     priority,
@@ -18,15 +35,23 @@ const TaskCard = ({ task }) => {
     ["startDate"]: startDate,
   } = task;
 
-  console.log("existing tasks:", task);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
 
   const handleEdit = () => {
     navigate(`/edit-tasks`, { state: { task } });
   };
 
   return (
-    <div
-      className="bg-white/90 shadow-md rounded-lg border-t-4 p-4 flex flex-col gap-2 w-[350px]  relative"
+    <motion.div
+      ref={ref}
+      variants={itemVariants}
+      initial="hidden"
+      animate={isInView ? "show" : "hidden"}
+      exit="exit"
+      transition={{ duration: 0.4 }}
+      layout
+      className="bg-white/90 shadow-md rounded-lg border-t-4 p-4 flex flex-col gap-2 w-[350px] relative"
       style={{
         borderColor:
           status === "pending"
@@ -37,7 +62,7 @@ const TaskCard = ({ task }) => {
       }}
     >
       <div className="flex justify-between items-center">
-        <div className="flex  gap-2">
+        <div className="flex gap-2">
           <span
             className={`text-xs font-semibold px-2 py-1 rounded-full ${
               status === "pending"
@@ -66,6 +91,17 @@ const TaskCard = ({ task }) => {
       <h3 className="font-semibold text-lg line-clamp-1">{title}</h3>
       <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
 
+      <div className="flex flex-wrap gap-1">
+        {task.tags?.map((tag, index) => (
+          <span
+            key={index}
+            className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full"
+          >
+            #{tag}
+          </span>
+        ))}
+      </div>
+
       <div className="text-sm font-medium text-gray-600">
         Task Done: {completedSubtasks} / {totalSubtasks}
         <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
@@ -89,7 +125,8 @@ const TaskCard = ({ task }) => {
         </p>
         <p>Due: {dueDate ? new Date(dueDate).toLocaleDateString() : "N/A"}</p>
       </div>
-      <div className="flex items-center justify-between">
+
+      <div className="flex items-center justify-between mt-2">
         <div onClick={handleEdit}>
           <Pencil size={20} />
         </div>
@@ -97,15 +134,13 @@ const TaskCard = ({ task }) => {
           <Trash2 size={20} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 const Tasks = () => {
   const { tasks } = useContext(TaskContext);
   const [filter, setFilter] = useState("all");
-
-  console.log("tasks added:", tasks);
 
   const filteredTasks =
     filter === "all" ? tasks : tasks.filter((task) => task.status === filter);
@@ -121,8 +156,13 @@ const Tasks = () => {
   return (
     <div className="p-4">
       <TaskMetrics />
-      <div className="flex justify-evenly gap-2 mb-4">
-        <h1 className="text-xl font-semibold ">My Tasks</h1>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-evenly gap-2 mb-4"
+      >
+        <h1 className="text-xl font-semibold">My Tasks</h1>
         {filters.map((f) => (
           <button
             key={f}
@@ -136,13 +176,21 @@ const Tasks = () => {
             {f === "all" ? "All Tasks" : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {filteredTasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
-      </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        layout
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+      >
+        <AnimatePresence>
+          {filteredTasks.map((task) => (
+            <TaskCard key={task.id} task={task} />
+          ))}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };
