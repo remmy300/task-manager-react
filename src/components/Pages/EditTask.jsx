@@ -14,6 +14,7 @@ export default function EditTaskPage() {
   }
 
   const handleSubmit = (updatedTask) => {
+    console.log("Submitting update for ID:", updatedTask.id);
     updateTask(state.task.id, updatedTask);
     navigate("/tasks");
   };

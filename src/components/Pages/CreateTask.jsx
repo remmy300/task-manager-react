@@ -24,29 +24,34 @@ import {
 import { useContext } from "react";
 import { TaskContext } from "@/context/TaskContext";
 
-const taskSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  tags: z.array(z.string()).default([]),
-  description: z.string().min(5, "Description must be at least 5 characters"),
-  priority: z.enum(["low", "medium", "high"], {
-    required_error: "Priority is required",
-  }),
-  dueDate: z.preprocess(
-    (arg) => (typeof arg === "string" ? new Date(arg) : arg),
-    z.date()
-  ),
-  startDate: z.preprocess(
-    (arg) => (typeof arg === "string" ? new Date(arg) : arg),
-    z.date()
-  ),
-  status: z
-    .enum(["pending", "inProgress", "completed"], {
-      required_error: "Status is required",
-    })
-    .default("pending"),
-  completedSubtasks: z.number().default(0),
-  totalSubtasks: z.number().default(0),
-});
+const taskSchema = z
+  .object({
+    title: z.string().min(1, "Title is required"),
+    tags: z.array(z.string()).default([]),
+    description: z.string().min(5, "Description must be at least 5 characters"),
+    priority: z.enum(["low", "medium", "high"], {
+      required_error: "Priority is required",
+    }),
+    dueDate: z.preprocess(
+      (arg) => (typeof arg === "string" ? new Date(arg) : arg),
+      z.date({ required_error: "Due date is required" })
+    ),
+    startDate: z.preprocess(
+      (arg) => (typeof arg === "string" ? new Date(arg) : arg),
+      z.date({ required_error: "Start date is required" })
+    ),
+    status: z
+      .enum(["pending", "inProgress", "completed"], {
+        required_error: "Status is required",
+      })
+      .default("pending"),
+    completedSubtasks: z.number().default(0),
+    totalSubtasks: z.number().default(0),
+  })
+  .refine((data) => data.dueDate > data.startDate, {
+    message: "Due date must be after start date",
+    path: ["dueDate"],
+  });
 
 export default function CreateTask({ onSubmit, initialValues }) {
   const { addTask } = useContext(TaskContext);
@@ -57,19 +62,27 @@ export default function CreateTask({ onSubmit, initialValues }) {
     defaultValues: initialValues
       ? {
           ...initialValues,
-          startDate: initialValues["startDate"]
-            ? new Date(initialValues["startDate"])
-            : undefined,
-          dueDate: initialValues["dueDate"]
-            ? new Date(initialValues["dueDate"])
-            : undefined,
+          startDate:
+            initialValues["startDate"] instanceof Date
+              ? initialValues["startDate"]
+              : initialValues["startDate"]
+              ? new Date(initialValues["startDate"])
+              : undefined,
+
+          dueDate:
+            initialValues["dueDate"] instanceof Date
+              ? initialValues["dueDate"]
+              : initialValues["dueDate"]
+              ? new Date(initialValues["dueDate"])
+              : undefined,
         }
       : {
           title: "",
           description: "",
           priority: "medium",
-          dueDate: undefined,
-          startDate: undefined,
+          startDate: new Date(),
+          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+
           status: "pending",
           completedSubtasks: 0,
           totalSubtasks: 0,
@@ -78,18 +91,22 @@ export default function CreateTask({ onSubmit, initialValues }) {
   });
 
   const handleFormSubmit = (data) => {
-    const processedData = {
+    const payload = {
       ...data,
-      dueDate: data["dueDate"]?.toISOString?.(),
-      startDate: data["startDate"]?.toISOString?.(),
+      dueDate:
+        data.dueDate instanceof Date ? data.dueDate : new Date(data.dueDate),
+      startDate:
+        data.startDate instanceof Date
+          ? data.startDate
+          : new Date(data.startDate),
     };
 
-    console.log("the proccesed data:", processedData);
+    console.log("Final payload:", payload);
 
     if (onSubmit) {
-      onSubmit(processedData);
+      onSubmit({ ...payload, id: initialValues?.id });
     } else {
-      addTask({ ...processedData, id: crypto.randomUUID() });
+      addTask(payload);
     }
 
     form.reset();
@@ -194,7 +211,15 @@ export default function CreateTask({ onSubmit, initialValues }) {
               <FormItem>
                 <FormLabel>Start Date</FormLabel>
                 <FormControl>
-                  <DatePicker value={field.value} onChange={field.onChange} />
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={(date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return date < today;
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -207,7 +232,17 @@ export default function CreateTask({ onSubmit, initialValues }) {
               <FormItem>
                 <FormLabel>Due Date</FormLabel>
                 <FormControl>
-                  <DatePicker value={field.value} onChange={field.onChange} />
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={(date) => {
+                      const startDate = form.getValues("startDate");
+                      if (!startDate) return true;
+                      const start = new Date(startDate);
+                      start.setHours(0, 0, 0, 0);
+                      return date < start;
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

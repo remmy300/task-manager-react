@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/popover";
 import { ChevronDownIcon } from "lucide-react";
 
-export function DatePicker({ value, onChange, placeholder = "Select date" }) {
+export function DatePicker({
+  value,
+  onChange,
+  placeholder = "Select date",
+  disabled,
+}) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -32,6 +37,7 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }) {
             setOpen(false);
           }}
           captionLayout="dropdown"
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>

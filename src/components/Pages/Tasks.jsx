@@ -1,18 +1,9 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useRef } from "react";
 import { TaskContext } from "@/context/TaskContext";
-import TaskMetrics from "../Layout/TaskMetrics";
 import { Trash2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useInView } from "framer-motion";
-
-// Animation Variants
-const containerVariants = {
-  show: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+import { motion, useInView } from "framer-motion";
+import { toast } from "@/components/ui/use-toast"; // Update this path if needed
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -40,6 +31,23 @@ const TaskCard = ({ task }) => {
 
   const handleEdit = () => {
     navigate(`/edit-tasks`, { state: { task } });
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteTask(task.id);
+      toast({
+        title: "Task Deleted",
+        description: `"${task.title}" was removed successfully.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not delete the task.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -119,18 +127,15 @@ const TaskCard = ({ task }) => {
       </div>
 
       <div className="flex justify-between text-xs text-gray-500 mt-2">
-        <p>
-          StartDate:{" "}
-          {startDate ? new Date(startDate).toLocaleDateString() : "N/A"}
-        </p>
-        <p>Due: {dueDate ? new Date(dueDate).toLocaleDateString() : "N/A"}</p>
+        <p>Start: {startDate?.toLocaleDateString?.() ?? "N/A"}</p>
+        <p>Due: {dueDate?.toLocaleDateString?.() ?? "N/A"}</p>
       </div>
 
       <div className="flex items-center justify-between mt-2">
         <div onClick={handleEdit}>
           <Pencil size={20} />
         </div>
-        <div onClick={() => deleteTask(task.id)}>
+        <div onClick={handleDelete}>
           <Trash2 size={20} />
         </div>
       </div>
@@ -138,61 +143,4 @@ const TaskCard = ({ task }) => {
   );
 };
 
-const Tasks = () => {
-  const { tasks } = useContext(TaskContext);
-  const [filter, setFilter] = useState("all");
-
-  const filteredTasks =
-    filter === "all" ? tasks : tasks.filter((task) => task.status === filter);
-
-  const filters = ["all", "pending", "inProgress", "completed"];
-
-  if (!tasks || tasks.length === 0) {
-    return (
-      <div className="text-center text-gray-500 mt-8">No tasks found.</div>
-    );
-  }
-
-  return (
-    <div className="p-4">
-      <TaskMetrics />
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex justify-evenly gap-2 mb-4"
-      >
-        <h1 className="text-xl font-semibold">My Tasks</h1>
-        {filters.map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-1 text-sm rounded-full border transition ${
-              filter === f
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            {f === "all" ? "All Tasks" : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </motion.div>
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        layout
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
-      >
-        <AnimatePresence>
-          {filteredTasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
-          ))}
-        </AnimatePresence>
-      </motion.div>
-    </div>
-  );
-};
-
-export default Tasks;
+export default TaskCard;
