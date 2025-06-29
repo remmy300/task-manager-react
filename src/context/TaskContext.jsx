@@ -16,10 +16,9 @@ import { useAuth } from "../auth/AuthContext"; // import your auth context
 export const TaskContext = createContext();
 
 export const TaskProvider = ({ children }) => {
-  const { user } = useAuth(); // get current logged-in user
+  const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
 
-  // 🔄 Real-time fetch tasks for the logged-in user
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -39,7 +38,6 @@ export const TaskProvider = ({ children }) => {
     return () => unsubscribe();
   }, [user]);
 
-  // ➕ Add task to Firestore
   const addTask = async (task) => {
     if (!user?.uid) return;
 
@@ -56,7 +54,6 @@ export const TaskProvider = ({ children }) => {
     await addDoc(collection(db, "users", user.uid, "tasks"), newTask);
   };
 
-  // 📝 Update task
   const updateTask = async (id, updatedTask) => {
     if (!user?.uid) return;
 
@@ -75,7 +72,6 @@ export const TaskProvider = ({ children }) => {
     });
   };
 
-  // 🗑️ Delete task
   const deleteTask = async (id) => {
     if (!user?.uid) return;
 

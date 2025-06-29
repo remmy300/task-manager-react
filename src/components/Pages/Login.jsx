@@ -63,6 +63,7 @@ export default function AuthForm() {
           type="password"
           {...formRegister("password")}
           placeholder="Password"
+          autoComplete="current-password"
           className="w-full border p-2 rounded"
         />
         {errors.password && (
