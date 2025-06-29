@@ -1,9 +1,19 @@
-import { useContext, useRef } from "react";
+import { useContext, useState, useRef } from "react";
 import { TaskContext } from "@/context/TaskContext";
+import TaskMetrics from "../Layout/TaskMetrics";
 import { Trash2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion, useInView } from "framer-motion";
-import { toast } from "@/components/ui/use-toast"; // Update this path if needed
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { toast } from "sonner";
+
+// Animation Variants
+const containerVariants = {
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -12,22 +22,24 @@ const itemVariants = {
 };
 
 const TaskCard = ({ task }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
   const navigate = useNavigate();
   const { deleteTask } = useContext(TaskContext);
 
+  if (!task) return null;
+
   const {
-    status,
-    priority,
-    description,
-    completedSubtasks = task.completedSubtasks ?? 0,
-    totalSubtasks = task.totalSubtasks ?? 0,
-    title,
+    status = "pending",
+    priority = "medium",
+    description = "",
+    completedSubtasks = 0,
+    totalSubtasks = 0,
+    title = "Untitled Task",
     ["dueDate"]: dueDate,
     ["startDate"]: startDate,
+    tags = [],
   } = task;
-
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
 
   const handleEdit = () => {
     navigate(`/edit-tasks`, { state: { task } });
@@ -36,17 +48,9 @@ const TaskCard = ({ task }) => {
   const handleDelete = async () => {
     try {
       await deleteTask(task.id);
-      toast({
-        title: "Task Deleted",
-        description: `"${task.title}" was removed successfully.`,
-        duration: 3000,
-      });
+      toast.success("Task deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not delete the task.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete task");
     }
   };
 
@@ -100,7 +104,7 @@ const TaskCard = ({ task }) => {
       <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
 
       <div className="flex flex-wrap gap-1">
-        {task.tags?.map((tag, index) => (
+        {tags.map((tag, index) => (
           <span
             key={index}
             className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full"
@@ -132,15 +136,72 @@ const TaskCard = ({ task }) => {
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <div onClick={handleEdit}>
+        <button onClick={handleEdit} className="hover:text-blue-500">
           <Pencil size={20} />
-        </div>
-        <div onClick={handleDelete}>
+        </button>
+        <button onClick={handleDelete} className="hover:text-red-500">
           <Trash2 size={20} />
-        </div>
+        </button>
       </div>
     </motion.div>
   );
 };
 
-export default TaskCard;
+const Tasks = () => {
+  const { tasks } = useContext(TaskContext);
+  const [filter, setFilter] = useState("all");
+
+  const filteredTasks =
+    filter === "all" ? tasks : tasks.filter((task) => task.status === filter);
+
+  const filters = ["all", "pending", "inProgress", "completed"];
+
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="text-center text-gray-500 mt-8">No tasks found.</div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <TaskMetrics />
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-evenly gap-2 mb-4"
+      >
+        <h1 className="text-xl font-semibold">My Tasks</h1>
+        {filters.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-1 text-sm rounded-full border transition ${
+              filter === f
+                ? "bg-blue-500 text-white border-blue-500"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {f === "all" ? "All Tasks" : f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </motion.div>
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        layout
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+      >
+        <AnimatePresence>
+          {filteredTasks.map((task) => (
+            <TaskCard key={task.id} task={task} />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Tasks;
