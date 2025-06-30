@@ -63,7 +63,7 @@ const TaskCard = ({ task }) => {
       exit="exit"
       transition={{ duration: 0.4 }}
       layout
-      className="bg-white/90 shadow-md rounded-lg border-t-4 p-4 flex flex-col gap-2 w-[350px] relative"
+      className="bg-white/90 shadow-md rounded-lg border-t-4 p-4 flex flex-col gap-2 w-full max-w-full sm:max-w-[350px] relative"
       style={{
         borderColor:
           status === "pending"
@@ -74,7 +74,7 @@ const TaskCard = ({ task }) => {
       }}
     >
       <div className="flex justify-between items-center">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <span
             className={`text-xs font-semibold px-2 py-1 rounded-full ${
               status === "pending"
@@ -163,15 +163,17 @@ const Tasks = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 overflow-auto h-full">
       <TaskMetrics />
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex justify-evenly gap-2 mb-4"
+        className="flex flex-wrap gap-2 justify-center md:justify-evenly mb-4"
       >
-        <h1 className="text-xl font-semibold">My Tasks</h1>
+        <h1 className="text-xl font-semibold w-full text-center md:text-left">
+          My Tasks
+        </h1>
         {filters.map((f) => (
           <button
             key={f}

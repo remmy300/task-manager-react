@@ -6,13 +6,13 @@ const NavBar = () => {
   const { user } = useAuth();
 
   return (
-    <nav className="bg-white/95 shadow sticky top-0 h-16 w-full z-40 px-4 flex items-center justify-between">
+    <nav className="bg-white/95 shadow sticky top-0 w-full z-40 px-4 py-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
       <h1 className="text-2xl">Task Manager</h1>
 
       {user && (
-        <>
+        <div className="flex flex-col md:flex-row md:items-center md:gap-4 mt-2 md:mt-0">
           <motion.h2
-            className="text-xl font-bold"
+            className="text-lg md:text-xl font-bold text-center md:text-left"
             initial={{ y: -30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -21,7 +21,7 @@ const NavBar = () => {
           </motion.h2>
 
           <motion.div
-            className="flex items-center gap-2 ml-4"
+            className="flex items-center gap-2 justify-center md:justify-start"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
@@ -39,7 +39,6 @@ const NavBar = () => {
                 {user.email?.charAt(0).toUpperCase()}
               </div>
             )}
-
             <span className="text-sm font-medium text-gray-700">
               {(user.displayName
                 ? user.displayName
@@ -50,7 +49,7 @@ const NavBar = () => {
               )?.toUpperCase()}
             </span>
           </motion.div>
-        </>
+        </div>
       )}
     </nav>
   );

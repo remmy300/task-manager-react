@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useContext } from "react";
 import { TaskContext } from "@/context/TaskContext";
 
 const taskSchema = z
@@ -29,22 +28,16 @@ const taskSchema = z
     title: z.string().min(1, "Title is required"),
     tags: z.array(z.string()).default([]),
     description: z.string().min(5, "Description must be at least 5 characters"),
-    priority: z.enum(["low", "medium", "high"], {
-      required_error: "Priority is required",
-    }),
+    priority: z.enum(["low", "medium", "high"]),
     dueDate: z.preprocess(
       (arg) => (typeof arg === "string" ? new Date(arg) : arg),
-      z.date({ required_error: "Due date is required" })
+      z.date()
     ),
     startDate: z.preprocess(
       (arg) => (typeof arg === "string" ? new Date(arg) : arg),
-      z.date({ required_error: "Start date is required" })
+      z.date()
     ),
-    status: z
-      .enum(["pending", "inProgress", "completed"], {
-        required_error: "Status is required",
-      })
-      .default("pending"),
+    status: z.enum(["pending", "inProgress", "completed"]).default("pending"),
     completedSubtasks: z.number().default(0),
     totalSubtasks: z.number().default(0),
   })
@@ -62,27 +55,15 @@ export default function CreateTask({ onSubmit, initialValues }) {
     defaultValues: initialValues
       ? {
           ...initialValues,
-          startDate:
-            initialValues["startDate"] instanceof Date
-              ? initialValues["startDate"]
-              : initialValues["startDate"]
-              ? new Date(initialValues["startDate"])
-              : undefined,
-
-          dueDate:
-            initialValues["dueDate"] instanceof Date
-              ? initialValues["dueDate"]
-              : initialValues["dueDate"]
-              ? new Date(initialValues["dueDate"])
-              : undefined,
+          startDate: new Date(initialValues.startDate),
+          dueDate: new Date(initialValues.dueDate),
         }
       : {
           title: "",
           description: "",
           priority: "medium",
           startDate: new Date(),
-          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-
+          dueDate: new Date(Date.now() + 86400000),
           status: "pending",
           completedSubtasks: 0,
           totalSubtasks: 0,
@@ -93,15 +74,9 @@ export default function CreateTask({ onSubmit, initialValues }) {
   const handleFormSubmit = (data) => {
     const payload = {
       ...data,
-      dueDate:
-        data.dueDate instanceof Date ? data.dueDate : new Date(data.dueDate),
-      startDate:
-        data.startDate instanceof Date
-          ? data.startDate
-          : new Date(data.startDate),
+      startDate: new Date(data.startDate),
+      dueDate: new Date(data.dueDate),
     };
-
-    console.log("Final payload:", payload);
 
     if (onSubmit) {
       onSubmit({ ...payload, id: initialValues?.id });
@@ -116,7 +91,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleFormSubmit)}
-        className="space-y-8 m-4 bg-white-90 rounded shadow w-full max-w-4xl p-4"
+        className="space-y-8 m-4 bg-white/90 rounded shadow w-full max-w-4xl p-4"
       >
         <h1 className="text-xl font-semibold text-center">
           {isEditing ? "Edit Task" : "Create New Task"}
@@ -129,7 +104,11 @@ export default function CreateTask({ onSubmit, initialValues }) {
             <FormItem>
               <FormLabel>Task Title</FormLabel>
               <FormControl>
-                <Input placeholder="Enter a task" {...field} />
+                <Input
+                  placeholder="Enter a task"
+                  {...field}
+                  className="w-full"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,14 +122,18 @@ export default function CreateTask({ onSubmit, initialValues }) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter task description" {...field} />
+                <Textarea
+                  placeholder="Enter task description"
+                  {...field}
+                  className="w-full"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex gap-3 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <FormField
             control={form.control}
             name="priority"
@@ -158,12 +141,8 @@ export default function CreateTask({ onSubmit, initialValues }) {
               <FormItem>
                 <FormLabel>Priority</FormLabel>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
@@ -177,6 +156,7 @@ export default function CreateTask({ onSubmit, initialValues }) {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="status"
@@ -184,12 +164,8 @@ export default function CreateTask({ onSubmit, initialValues }) {
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -214,17 +190,14 @@ export default function CreateTask({ onSubmit, initialValues }) {
                   <DatePicker
                     value={field.value}
                     onChange={field.onChange}
-                    disabled={(date) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return date < today;
-                    }}
+                    disabled={(date) => date < new Date().setHours(0, 0, 0, 0)}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="dueDate"
@@ -235,13 +208,9 @@ export default function CreateTask({ onSubmit, initialValues }) {
                   <DatePicker
                     value={field.value}
                     onChange={field.onChange}
-                    disabled={(date) => {
-                      const startDate = form.getValues("startDate");
-                      if (!startDate) return true;
-                      const start = new Date(startDate);
-                      start.setHours(0, 0, 0, 0);
-                      return date < start;
-                    }}
+                    disabled={(date) =>
+                      new Date(date) < new Date(form.getValues("startDate"))
+                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -249,7 +218,8 @@ export default function CreateTask({ onSubmit, initialValues }) {
             )}
           />
         </div>
-        <div className="flex gap-4">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="totalSubtasks"
@@ -259,10 +229,10 @@ export default function CreateTask({ onSubmit, initialValues }) {
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="e.g., 5"
                     min={0}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="w-full"
                   />
                 </FormControl>
                 <FormMessage />
@@ -279,16 +249,17 @@ export default function CreateTask({ onSubmit, initialValues }) {
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="e.g., 2"
                     min={0}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="w-full"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="tags"
@@ -297,15 +268,16 @@ export default function CreateTask({ onSubmit, initialValues }) {
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter tags comma separated (e.g. work, urgent)"
                     value={field.value?.join(", ") ?? ""}
+                    placeholder="e.g., work, urgent"
                     onChange={(e) => {
                       const tags = e.target.value
                         .split(",")
-                        .map((tag) => tag.trim())
-                        .filter((tag) => tag.length > 0);
+                        .map((t) => t.trim())
+                        .filter(Boolean);
                       field.onChange(tags);
                     }}
+                    className="w-full"
                   />
                 </FormControl>
                 <FormMessage />

@@ -98,7 +98,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <motion.h1
           className="text-2xl font-bold"
           initial={{ x: -50, opacity: 0 }}
@@ -158,7 +158,7 @@ const Dashboard = () => {
         <TaskCharts />
       </div>
 
-      <div className="flex gap-6 m-3">
+      <div className="flex flex-col sm:flex-row gap-4 m-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
@@ -196,30 +196,32 @@ const Dashboard = () => {
         {filteredTasks.length === 0 ? (
           <p className="text-gray-500">No tasks match your search.</p>
         ) : (
-          sortedTasks.map((task) => (
-            <div key={task.id} className="mb-3 p-2 border-b last:border-b-0">
-              <div className="flex justify-between">
-                <span className="font-medium">{task.title}</span>
-                <span
-                  className={`text-xs px-2 py-1 rounded ${
-                    task.status === "completed"
-                      ? "bg-yellow-400 "
-                      : task.status === "inProgress"
-                      ? "bg-pink-400 "
-                      : "bg-blue-400 "
-                  }`}
-                >
-                  {task.status}
-                </span>
+          <div className="space-y-4">
+            {sortedTasks.map((task) => (
+              <div key={task.id} className="p-4 border rounded-md shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                  <span className="font-medium">{task.title}</span>
+                  <span
+                    className={`text-xs px-2 py-1 rounded w-fit ${
+                      task.status === "completed"
+                        ? "bg-yellow-400"
+                        : task.status === "inProgress"
+                        ? "bg-pink-400"
+                        : "bg-blue-400"
+                    }`}
+                  >
+                    {task.status}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Due:{" "}
+                  {task.dueDate && !isNaN(new Date(task.dueDate))
+                    ? new Date(task.dueDate).toLocaleDateString()
+                    : "No due date"}
+                </p>
               </div>
-              <p className="text-sm text-gray-500">
-                Due:{" "}
-                {task.dueDate && !isNaN(new Date(task.dueDate))
-                  ? new Date(task.dueDate).toLocaleDateString()
-                  : "No due date"}
-              </p>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -1,42 +1,26 @@
-# 📝 Task Manager App
+# Task Tracker App (React + Firebase)
 
-A modern, responsive task management app built with [React](https://reactjs.org/) and [Tailwind CSS](https://tailwindcss.com/). Easily create, track, update, and manage your tasks in an organized and user-friendly interface.
-
----
+A responsive task management app built with React, Firebase, and Tailwind CSS. Features include filtering, due dates, and real-time syncing with Firestore.
 
 ## 🚀 Features
 
-- ✅ Add, edit, and delete tasks
-- 🗂️ Filter and sort tasks (e.g., by status or priority)
-- 📅 Mark tasks as completed
-- 💾 Data persistence using Local Storage
-- 🖱️ Drag and drop task reordering
-- 👤 User authentication
-
----
+- Create, update, and delete tasks
+- Mark tasks as complete
+- Filter tasks by status
+- Firebase authentication (Email & Google)
+- Responsive design with Tailwind CSS
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React, Tailwind CSS,Shadcn
-- **State Management:** useState / useReducer / Context API
-- ** Backend:** Firebase
+- **Frontend**: React, Tailwind CSS, React Hook Form, Zod
+- **Backend**: Firebase Authentication & Firestore
+- **Hosting**: Vercel
 
----
-
----
-
-## 🔧 Installation
+## 📦 Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/remmy/300/task-manager.git
-
-# Navigate into the project
-cd task-manager
-
-# Install dependencies
+git clone https://github.com/yourusername/task-tracker-app.git
+cd task-tracker-app
 npm install
-
-# Run the development server
 npm run dev
 ```

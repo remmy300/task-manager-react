@@ -11,7 +11,6 @@ import {
 import { useContext } from "react";
 import { TaskContext } from "@/context/TaskContext";
 
-// Register ChartJS components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -24,7 +23,6 @@ ChartJS.register(
 const TaskCharts = () => {
   const { tasks } = useContext(TaskContext);
 
-  // Filter out undefined statuses and priorities
   const statusCounts = tasks.reduce((acc, task) => {
     if (task.status) {
       acc[task.status] = (acc[task.status] || 0) + 1;
@@ -39,7 +37,6 @@ const TaskCharts = () => {
     return acc;
   }, {});
 
-  // Status Distribution Chart (Pie)
   const statusLabels =
     Object.keys(statusCounts).length > 0
       ? Object.keys(statusCounts)
@@ -58,7 +55,6 @@ const TaskCharts = () => {
     ],
   };
 
-  // Priority Distribution Chart (Bar)
   const priorityData = {
     labels: Object.keys(priorityCounts),
     datasets: [
@@ -72,11 +68,12 @@ const TaskCharts = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      {/* Status Doughnut Chart */}
-      <div className="bg-white/90 p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Task Status Distribution</h3>
-        <div className="h-[300px] w-[500px] mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+      <div className="bg-white/90 p-4 rounded-lg shadow w-full">
+        <h3 className="text-lg font-semibold mb-4 text-center">
+          Task Status Distribution
+        </h3>
+        <div className="relative w-full aspect-square max-w-[400px] mx-auto">
           <Doughnut
             data={statusData}
             options={{
@@ -87,9 +84,12 @@ const TaskCharts = () => {
           />
         </div>
       </div>
-      <div className="bg-white/90 p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Task Priority Levels</h3>
-        <div className="h-[300px] w-[500px] p-3 mx-auto">
+
+      <div className="bg-white/90 p-4 rounded-lg shadow w-full">
+        <h3 className="text-lg font-semibold mb-4 text-center">
+          Task Priority Levels
+        </h3>
+        <div className="relative w-full aspect-[4/3] max-w-[500px] mx-auto">
           <Bar
             data={priorityData}
             options={{
@@ -98,23 +98,13 @@ const TaskCharts = () => {
               scales: {
                 y: {
                   beginAtZero: true,
-                  ticks: {
-                    stepSize: 1,
-                  },
-                  grid: {
-                    display: false,
-                  },
+                  ticks: { stepSize: 1 },
+                  grid: { display: false },
                 },
-                x: {
-                  grid: {
-                    display: false,
-                  },
-                },
+                x: { grid: { display: false } },
               },
               plugins: {
-                legend: {
-                  display: false,
-                },
+                legend: { display: false },
               },
             }}
           />
